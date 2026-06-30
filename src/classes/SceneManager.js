@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { CradleFrame } from './CradleFrame.js';
 
 const _PARTICLE_COUNT = 400;
 const _CAM_SPEED = 1.2;
@@ -37,6 +38,7 @@ export class SceneManager {
     this._initEnvironment();
     this._initStage();
     this._initParticles();
+    this._initCradleFrame();
     this._applyCameraPose();
 
     this._onKeyDown = (e) => this._handleKeyDown(e);
@@ -165,6 +167,11 @@ this.scene.background = textureLoader.load('/src/assets/back2.jpg');
 
     this._particles = new THREE.Points(geo, mat);
     this.scene.add(this._particles);
+  }
+
+  _initCradleFrame() {
+    this._frame = new CradleFrame();
+    this.scene.add(this._frame.group);
   }
 
   _applyCameraPose() {
