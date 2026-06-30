@@ -1,3 +1,4 @@
+
 import * as THREE from 'three';
 import BallGroup from './BallGroup.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
@@ -31,15 +32,19 @@ export class SceneManager {
     this._camDistance = 16;
     this._keysPressed = new Set();
 
-    this._initRenderer();
+   this._initRenderer();
     this._initCamera();
     this._initScene();
     this._initCameraControl();
     this._initLights();
     this._initEnvironment();
+    
+    this._initCradleFrame(); 
+    
+   
     this._initStage();
-    this._initParticles();
-    this._initCradleFrame();
+    
+  
     this._applyCameraPose();
 
     this._onKeyDown = (e) => this._handleKeyDown(e);
@@ -83,9 +88,8 @@ export class SceneManager {
 
   _initScene() {
     this.scene = new THREE.Scene();
-    // this.scene.background = new THREE.Color(0xD2A1E);
-     const textureLoader = new THREE.TextureLoader();
-this.scene.background = textureLoader.load('/src/assets/back2.jpg');
+    const textureLoader = new THREE.TextureLoader();
+    this.scene.background = textureLoader.load('/src/assets/back2.jpg');
     this.scene.fog = new THREE.FogExp2(0x2D4A1E, 0.018);
   }
 
@@ -129,6 +133,7 @@ this.scene.background = textureLoader.load('/src/assets/back2.jpg');
     pmremGenerator.dispose();
   }
 
+  
   _initStage() {
     const floorGeo = new THREE.PlaneGeometry(20, 20);
     const floorMat = new THREE.MeshStandardMaterial({
@@ -141,40 +146,16 @@ this.scene.background = textureLoader.load('/src/assets/back2.jpg');
     floor.position.y = -0.05;
     floor.receiveShadow = true;
     this.scene.add(floor);
-    this.balls = new BallGroup(this.scene);
-  }
 
-  _initParticles() {
-    const count = _PARTICLE_COUNT;
-    const positions = new Float32Array(count * 3);
-
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 14;
-      positions[i * 3 + 1] = Math.random() * 5;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 14 - 1;
-    }
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-    const mat = new THREE.PointsMaterial({
-      color: 0x8899bb,
-      size: 0.015,
-      transparent: true,
-      opacity: 0.25,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      sizeAttenuation: true,
-    });
-
-    this._particles = new THREE.Points(geo, mat);
-    this.scene.add(this._particles);
+    // التعديل هون 
+    this.balls = new BallGroup(this.scene, this._frame);
   }
 
   _initCradleFrame() {
     this._frame = new CradleFrame();
     this.scene.add(this._frame.group);
   }
+ 
 
   _applyCameraPose() {
     const el = this._camElevation;
