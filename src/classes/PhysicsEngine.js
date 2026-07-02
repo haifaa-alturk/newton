@@ -102,6 +102,9 @@ export class PhysicsEngine {
     this.updateRestPositions();
   }
 
+getAngles() {
+  return Array.from(this.angles);
+}
   
   updateRestPositions() {
     this.ballDiameter = this.ballRadius * 2;
@@ -109,7 +112,14 @@ export class PhysicsEngine {
       this._restX[i] = (i - (this.ballCount - 1) / 2) * this.ballDiameter;
     }
   }
-
+//   لتحديد زاوية البداية لأي كرة
+  setAngle(index, angle) {
+    this.angles[index] = angle;
+  }
+// لتحديد السرعة الابتدائية 
+  setAngularVelocity(index, v) {
+    this.angularVelocities[index] = v;
+  }
   
   step(frameDelta, speedMultiplier = 1) {
     this.collisionEvents = []; 
@@ -128,14 +138,36 @@ export class PhysicsEngine {
   }
 
   
-  _integrate(dt) {
+  // _integrate(dt) {
+  //   const L = this.stringLength;
+  //   const gL = _G / L;
+
+  //   for (let i = 0; i < this.ballCount; i++) {
+  //     const acc = -gL * Math.sin(this.angles[i]) - this.damping * this.angularVelocities[i];
+  //     this.angularVelocities[i] += acc * dt;
+  //     this.angles[i] += this.angularVelocities[i] * dt;
+  //   }
+  // }
+_integrate(dt) {
     const L = this.stringLength;
     const gL = _G / L;
+    
+    // 👈 عتبة السرعة: إذا كانت السرعة أقل من هذا الرقم الصغير جداً، نعتبرها صفراً
+    const VELOCITY_THRESHOLD = 0.0001; 
+    const ANGLE_THRESHOLD = 0.0005;
 
     for (let i = 0; i < this.ballCount; i++) {
+      // حساب التسارع (الجاذبية + الاحتكاك)
       const acc = -gL * Math.sin(this.angles[i]) - this.damping * this.angularVelocities[i];
+      
       this.angularVelocities[i] += acc * dt;
       this.angles[i] += this.angularVelocities[i] * dt;
+
+      // 👈 إضافة آلية التخميد النهائي: إذا خمدت الحركة جداً، نجبر الكرة على الاستقرار تماماً
+      if (Math.abs(this.angularVelocities[i]) < VELOCITY_THRESHOLD && Math.abs(this.angles[i]) < ANGLE_THRESHOLD) {
+        this.angularVelocities[i] = 0;
+        this.angles[i] = 0;
+      }
     }
   }
 
@@ -190,8 +222,10 @@ export class PhysicsEngine {
 
     const vi = L * this.angularVelocities[i] * cosI;
     const vj = L * this.angularVelocities[j] * cosJ;
-    const v1New = ((m1 - e * m2) * v1 + (1 + e) * m2 * v2) / (m1 + m2);
-    const v2New = ((m2 - e * m1) * v2 + (1 + e) * m1 * v1) / (m1 + m2);
+    
+  
+    const v1New = ((m1 - e * m2) * vi + (1 + e) * m2 * vj) / (m1 + m2);
+    const v2New = ((m2 - e * m1) * vj + (1 + e) * m1 * vi) / (m1 + m2);
 
     const safeCosI = Math.abs(cosI) > _COS_CLAMP ? cosI : _COS_CLAMP * Math.sign(cosI) || _COS_CLAMP;
     const safeCosJ = Math.abs(cosJ) > _COS_CLAMP ? cosJ : _COS_CLAMP * Math.sign(cosJ) || _COS_CLAMP;
@@ -226,5 +260,36 @@ export class PhysicsEngine {
 
   _getLinearVelocity(index) {
     return this.stringLength * this.angularVelocities[index] * Math.cos(this.angles[index]);
+  }
+
+ 
+  getTotalEnergy() {
+    let ke = 0; 
+    let pe = 0; 
+    const L = this.stringLength;
+    const g = _G;
+
+    for (let i = 0; i < this.ballCount; i++) {
+      const m = this.masses[i];
+      const v = this._getLinearVelocity(i);
+      
+     
+      ke += 0.5 * m * v * v;
+      
+      
+      pe += m * g * L * (1 - Math.cos(this.angles[i]));
+    }
+
+    return ke + pe; 
+  }
+
+
+  getTotalMomentum() {
+    let p = 0; 
+    for (let i = 0; i < this.ballCount; i++) {
+   
+      p += this.masses[i] * this._getLinearVelocity(i);
+    }
+    return p;
   }
 }

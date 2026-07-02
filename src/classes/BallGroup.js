@@ -31,9 +31,8 @@ export default class BallGroup {
 
  
 _updateTopY() {
-    this.topY = 5.0; 
-  }
-
+  this.topY = 5.0; 
+}
   _build() {
     this.balls.forEach(b => this.group.remove(b));
     this.ropeGroups.forEach(rg => rg.forEach(r => this.group.remove(r)));
