@@ -6,6 +6,9 @@ const MAX_RADIUS = 0.55;
 const MIN_ROPE = 1.5;
 const MAX_ROPE = 3.5; 
 
+ const _TOP_ROPE_Z = [0.015, -0.015];   
+const _BALL_ROPE_Z = [0.08, -0.08];    
+
 export default class BallGroup {
  constructor(scene, cradleFrame, options = {}) {
     this.scene = scene;
@@ -16,7 +19,12 @@ export default class BallGroup {
     this.ballRadius = options.ballRadius ?? 0.25;
     this.ropeLength = options.ropeLength ?? 2.0;
     
-    
+    this._vec3a = new THREE.Vector3();
+this._vec3b = new THREE.Vector3();
+this._quat = new THREE.Quaternion();
+
+
+
     this.topY = 5.0; 
 
     this.spacing = this.ballRadius * 2 + 0.02;
@@ -51,10 +59,24 @@ _updateTopY() {
       clearcoat: 0.5,
     });
 
-    const ropeMat = new THREE.LineBasicMaterial({ color: 0xcccccc });
+    const ropeMat = new THREE.MeshStandardMaterial({
+    color: 0x444455,
+    roughness: 0.6,
+    metalness: 0.3,
+});
+    // const ropeMat = new THREE.LineBasicMaterial({ color: 0xcccccc });
 
     // لتبعيد الخيوط  وتتناسب مع حجم الستاند  
-    const ropeZ = [0.05, -0.05];
+    // const ropeZ = [0.05, -0.05];
+   
+
+const ropeGeometry =
+    new THREE.CylinderGeometry(
+      0.02,
+    0.02,
+        1,
+        6
+    );
 
     for (let i = 0; i < this.ballCount; i++) {
       const x   = startX + i * this.spacing;
@@ -70,31 +92,36 @@ _updateTopY() {
       this.group.add(ball);
       this.balls.push(ball);
 
-      const ropes = ropeZ.map(z => {
-        const pts = [
-          new THREE.Vector3(x, this.topY, z),
-          new THREE.Vector3(x, ballY + this.ballRadius, z),
-        ];
-        const ropeGeo  = new THREE.BufferGeometry().setFromPoints(pts);
-        const rope     = new THREE.Line(ropeGeo, ropeMat);
+
+const ropes = _TOP_ROPE_Z.map((topZ, j) => {
+        const rope = new THREE.Mesh(ropeGeometry, ropeMat);
+        rope.castShadow = true;
         this.group.add(rope);
+
+        this._placeRope(
+          rope,
+          x, this.topY, topZ,
+          x, ballY + this.ballRadius, _BALL_ROPE_Z[j]
+        );
+
         return rope;
       });
       this.ropeGroups.push(ropes);
     }
   }
 
-  updateRopes() {
+updateRopes() {
     this.balls.forEach((ball, i) => {
       const x = ball.position.x;
       const y = ball.position.y;
-    const ropeZ = [0.05, -0.05];
+      const restX = ball.userData.restX;
+
       this.ropeGroups[i].forEach((rope, j) => {
-        const pts = [
-          new THREE.Vector3(x, this.topY, ropeZ[j]),
-          new THREE.Vector3(x, y + this.ballRadius, ropeZ[j]),
-        ];
-        rope.geometry.setFromPoints(pts);
+        this._placeRope(
+          rope,
+          restX, this.topY, _TOP_ROPE_Z[j],
+          x, y + this.ballRadius, _BALL_ROPE_Z[j]
+        );
       });
     });
   }
@@ -143,5 +170,36 @@ _updateTopY() {
       this.balls[i].position.y = this.topY - Math.cos(angle) * this.ropeLength - this.ballRadius;
     });
     this.updateRopes();
+  }
+  _placeRope(mesh, ax, ay, az, bx, by, bz) {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const dz = bz - az;
+    const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    if (len < 0.001) {
+      mesh.scale.y = 0.001;
+      return;
+    }
+
+   const clampedLen = len;
+
+    const nx = dx / len;
+    const ny = dy / len;
+    const nz = dz / len;
+
+    const endX = ax + nx * clampedLen;
+    const endY = ay + ny * clampedLen;
+    const endZ = az + nz * clampedLen;
+
+    mesh.position.set((ax + endX) * 0.5, (ay + endY) * 0.5, (az + endZ) * 0.5);
+
+    this._quat.setFromUnitVectors(
+      this._vec3a.set(0, 1, 0),
+      this._vec3b.set(nx, ny, nz)
+    );
+    mesh.quaternion.copy(this._quat);
+
+    mesh.scale.y = clampedLen;
   }
 }

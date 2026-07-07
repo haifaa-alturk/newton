@@ -80,14 +80,14 @@ const _COS_CLAMP = 0.05;
 const _CLOSING_EPSILON = 0.001;
 
 export class PhysicsEngine {
-  constructor({ ballCount = 5, stringLength = 2.0, ballRadius = 0.25, mass = 1, restitution = 0.99, damping = 0.004 } = {}) {
+  constructor({ ballCount = 5, stringLength = 2.0, ballRadius = 0.25, mass = 1, restitution = 0.99, damping = 0.004,soundManager=null } = {}) {
     this.ballCount = ballCount;
     this.stringLength = stringLength;
     this.ballRadius = ballRadius;
     this.ballDiameter = this.ballRadius * 2;
     this.restitution = restitution; 
     this.damping = damping;         
-
+    this.soundManager = soundManager ;
     this.masses = new Array(this.ballCount).fill(mass);
     this.angles = new Float64Array(this.ballCount);
     this.angularVelocities = new Float64Array(this.ballCount);
@@ -200,6 +200,11 @@ _integrate(dt) {
           seenThisSubstep.add(i);
           const intensity = Math.min(1, Math.abs(vi - vj) / 3); 
           freshEvents.push({ index: i, intensity });
+
+          if(this.soundManager){
+            this.soundManager.resumeAudioContext();//sound
+            this.soundManager.playCollisionSound(intensity);//sound
+          }
         }
       }
       if (!hit) break;

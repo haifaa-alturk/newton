@@ -4,8 +4,11 @@ import { SceneManager } from './classes/SceneManager.js';
 import IntroScreen from './classes/IntroScreen.js';
 
 import { PhysicsEngine } from './classes/PhysicsEngine.js'; 
+import { SoundManager } from './classes/SoundManager.js';
 
 const sceneManager = new SceneManager();
+
+const soundManager = new SoundManager();
 
 
 const physicsEngine = new PhysicsEngine({
@@ -13,8 +16,10 @@ const physicsEngine = new PhysicsEngine({
   stringLength: 2.0, 
   ballRadius: 0.25,  
   restitution: 0.99, 
-  damping: 0.004    
+  damping: 0.004, 
+  soundManager:soundManager,   
 });
+
 //تجريبي
 // لنقم بسحب الكرة لبدء التأرجح فوراً عند التشغيل
 physicsEngine.setAngle(0, -Math.PI / 4); // سحب الكرة الأولى بزاوية 45 درجة (بالراديان)
@@ -28,6 +33,7 @@ const introScreen = new IntroScreen({
   onStart: () => {
     console.log('Intro complete, starting simulation');
     sceneManager.container.style.display = 'block';
+    soundManager.resumeAudioContext();
   }
 });
 
