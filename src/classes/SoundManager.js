@@ -114,7 +114,7 @@ export class SoundManager {
       source.connect(gainNode);
       gainNode.connect(this.masterGain);
       
-      const volumeLevel = this.volume * Math.min(1, intensity * 0.8 + 0.2);
+      const volumeLevel = this.volume * Math.min(1, intensity * 0.08 + 0.0001);
       gainNode.gain.setValueAtTime(volumeLevel, this.audioContext.currentTime);source.playbackRate.value = 0.9 + intensity * 0.2;
       
       source.start(this.audioContext.currentTime);

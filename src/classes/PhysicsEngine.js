@@ -196,7 +196,7 @@ _integrate(dt) {
         const closing = vi - vj > _CLOSING_EPSILON;
         const wasContact = this._prevContactState.has(i);
         
-        if (closing && !wasContact && !seenThisSubstep.has(i)) {
+      if (closing && !wasContact && !seenThisSubstep.has(i)) {
           seenThisSubstep.add(i);
           const intensity = Math.min(1, Math.abs(vi - vj) / 3); 
           freshEvents.push({ index: i, intensity });
