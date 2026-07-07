@@ -6,7 +6,7 @@ const MAX_RADIUS = 0.55;
 const MIN_ROPE = 1.5;
 const MAX_ROPE = 3.5; 
 
- const _TOP_ROPE_Z = [0.015, -0.015];   
+const _TOP_ROPE_Z = [0.015, -0.015];   
 const _BALL_ROPE_Z = [0.08, -0.08];    
 
 export default class BallGroup {
@@ -144,6 +144,16 @@ updateRopes() {
     
     // تحديث الخيوط بعد الموضع الجديد
     this.updateRopes(); 
+  }
+
+  setRopeLength(value) {
+    this.ropeLength = value;
+    const newY = this._ballY();
+    this.balls.forEach(ball => {
+      ball.position.y = newY;
+    });
+    this.updateRopes(); 
+
   }
   changeRadius(delta) {
     const newR = Math.max(MIN_RADIUS, Math.min(MAX_RADIUS, this.ballRadius + delta));
