@@ -5,9 +5,6 @@ import IntroScreen from './classes/IntroScreen.js';
 import { GuiPanel } from './classes/GuiPanel.js';
 import { PhysicsEngine } from './classes/PhysicsEngine.js'; 
 import { SoundManager } from './classes/SoundManager.js';
-// import { BallGroup } from './classes/BallGroup.js';
-
-const sceneManager = new SceneManager();
 
 const soundManager = new SoundManager();
 
@@ -20,14 +17,9 @@ const physicsEngine = new PhysicsEngine({
   soundManager:soundManager,   
 });
 
-// const ballGroup = new BallGroup();
+const sceneManager = new SceneManager(physicsEngine);
 
 const gui = new GuiPanel(physicsEngine);
-
-//تجريبي
-// لنقم بسحب الكرة لبدء التأرجح فوراً عند التشغيل
-// physicsEngine.setAngle(0, -Math.PI / 4); // سحب الكرة الأولى بزاوية 45 درجة (بالراديان)
-// physicsEngine.setAngle(1, -Math.PI / 4); // اختياري: يمكنك سحب الثانية أيضاً إذا أردتِ
 
 const clock = new THREE.Clock();
 
@@ -53,6 +45,8 @@ function animate() {
   physicsEngine.step(safeDelta, 1); 
   gui.updatEnergy(physicsEngine.getEnergy());
   gui.updateMomentum(physicsEngine.getTotalMomentum());
+  gui.updateRadius(physicsEngine.ballRadius);
+  gui.updateLength(physicsEngine.stringLength);
 
 
   const currentAngles = physicsEngine.getAngles();

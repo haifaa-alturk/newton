@@ -11,8 +11,9 @@ const _MAX_ELEVATION = 1.396;
 const _TARGET = new THREE.Vector3(0, 1.6, 0);
 
 export class SceneManager {
-  constructor(container = null) {
+  constructor(physicsEngine, container = null) {
     this.container = container;
+    this.physics = physicsEngine;
     this._ownContainer = false;
 
     if (!this.container) {
@@ -148,7 +149,8 @@ export class SceneManager {
     this.scene.add(floor);
 
     // التعديل هون 
-    this.balls = new BallGroup(this.scene, this._frame);
+    this.balls = new BallGroup(this.scene, this._frame, this.physics);
+    
   }
 
   _initCradleFrame() {

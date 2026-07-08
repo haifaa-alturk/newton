@@ -10,14 +10,22 @@ const _TOP_ROPE_Z = [0.015, -0.015];
 const _BALL_ROPE_Z = [0.08, -0.08];    
 
 export default class BallGroup {
- constructor(scene, cradleFrame, options = {}) {
+ 
+    get ballRadius () {
+      return this.physics.ballRadius ?? 0.25;
+    }
+
+    get ropeLength () {
+      return this.physics.stringLength ?? 2.0;
+    }
+
+  constructor(scene, cradleFrame, physicsEngine, options = {}) {
     this.scene = scene;
     this.cradleFrame = cradleFrame;
+    this.physics = physicsEngine;
     this.group = new THREE.Group();
 
     this.ballCount  = options.ballCount  ?? 5;
-    this.ballRadius = options.ballRadius ?? 0.25;
-    this.ropeLength = options.ropeLength ?? 2.0;
     
     this._vec3a = new THREE.Vector3();
 this._vec3b = new THREE.Vector3();
@@ -64,10 +72,6 @@ _updateTopY() {
     roughness: 0.6,
     metalness: 0.3,
 });
-    // const ropeMat = new THREE.LineBasicMaterial({ color: 0xcccccc });
-
-    // لتبعيد الخيوط  وتتناسب مع حجم الستاند  
-    // const ropeZ = [0.05, -0.05];
    
 
 const ropeGeometry =
@@ -134,31 +138,19 @@ updateRopes() {
   //تغيير طول الخيط 
   changeRopeLength(delta) {
     // حطينا حد لتطويل الخيط
-    this.ropeLength = Math.max(MIN_ROPE, Math.min(MAX_ROPE, this.ropeLength + delta));
-    
-    // تحديث موضع الكرات بعد الطول الجديد
-    const newY = this._ballY();
-    this.balls.forEach(ball => {
-      ball.position.y = newY;
-    });
-    
-    // تحديث الخيوط بعد الموضع الجديد
-    this.updateRopes(); 
-  }
-
-  setRopeLength(value) {
-    this.ropeLength = value;
+    this.physics.stringLength = Math.max(MIN_ROPE, Math.min(MAX_ROPE, this.physics.stringLength + delta));
     const newY = this._ballY();
     this.balls.forEach(ball => {
       ball.position.y = newY;
     });
     this.updateRopes(); 
-
   }
+
+
   changeRadius(delta) {
     const newR = Math.max(MIN_RADIUS, Math.min(MAX_RADIUS, this.ballRadius + delta));
-    if (newR === this.ballRadius) return;
-    this.ballRadius = newR;
+    if (newR === this.physics.ballRadius) return;
+    this.physics.setRadius(newR);
     this._build(); 
   }
 

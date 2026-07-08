@@ -1,15 +1,14 @@
 export class SoundManager {
   constructor() {
-    // إعدادات الصوت الأساسية
+
     this.sounds = {};
     this.isEnabled = true;
     this.volume = 0.5;
     this.audioContext = null;
-    this.masterGain = null;        // 👈 من الملف الجديد
+    this.masterGain = null;     
     this.isLoaded = false;
-    this._lastClickTime = new Map(); // 👈 من الملف الجديد (لمنع التكرار)
+    this._lastClickTime = new Map(); 
     
-    // قائمة الملفات الصوتية (اختياري للـ MP3)
     this.soundFiles = {
       collision: '/sounds/collision.mp3',
     };
@@ -18,9 +17,6 @@ export class SoundManager {
     this._loadSounds();
   }
 
-  // ============================================
-  // 1. تهيئة السياق الصوتي
-  // ============================================
   _initAudioContext() {
     try {
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -34,9 +30,7 @@ export class SoundManager {
     }
   }
 
-  // ============================================
-  // 2. تحميل الملف الصوتي (اختياري)
-  // ============================================
+// تحميل الملف الصوتي
   async _loadSounds() {
     if (!this.audioContext) return;
     
@@ -62,9 +56,6 @@ export class SoundManager {
     }
   }
 
-  // ============================================
-  // 3. تشغيل السياق الصوتي
-  // ============================================
   resumeAudioContext() {
     if (this.audioContext && this.audioContext.state === 'suspended') {
       this.audioContext.resume();
@@ -72,9 +63,6 @@ export class SoundManager {
     }
   }
 
-  // ============================================
-  // 4. منع التكرار السريع (من الملف الجديد)
-  // ============================================
   _canPlayClick(pairIndex) {
     const now = performance.now();
     const last = this._lastClickTime.get(pairIndex) || 0;
@@ -83,28 +71,22 @@ export class SoundManager {
     return true;
   }
 
-  // ============================================
-  // 5. صوت التصادم المعدني (الرئيسي) 🎵
-  // ============================================
+  // صوت التصادم
   playCollisionSound(intensity = 1, pairIndex = -1) {
-    // منع التكرار السريع
+    // منع التكرار
     if (pairIndex >= 0 && !this._canPlayClick(pairIndex)) return;
     
     if (!this.isEnabled || !this.audioContext) return;
     
-    // إذا كان الملف الصوتي محمّل، استخدمه
     if (this.isLoaded && this.sounds.collision) {
       this._playFileSound(intensity);
       return;
     }
-    
-    // وإلا استخدم الصوت المعدني الاصطناعي
+
     this._playMetalSound(intensity);
   }
 
-  // ============================================
-  // 6. تشغيل الملف الصوتي (إذا موجود)
-  // ============================================
+// تشغيل الملف
   _playFileSound(intensity = 1) {
     try {
       const source = this.audioContext.createBufferSource();
@@ -129,24 +111,19 @@ export class SoundManager {
     }
   }
 
-  // ============================================
-  // 7. الصوت المعدني الاصطناعي (من الملف الجديد) 🥁
-  // ============================================
+// الصوت من الملف
   _playMetalSound(intensity = 1) {
     try {
       const ctx = this.audioContext;
       const now = ctx.currentTime;
       const vol = Math.min(1, Math.max(0.05, intensity)) * 0.18 * this.volume;
 
-      // الماستر Gain
       const masterGain = ctx.createGain();
       masterGain.gain.setValueAtTime(vol, now);
       masterGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
       masterGain.connect(this.masterGain);
 
-      // ==========================================
-      // الضوضاء (تعطي الإحساس بالمعدن)
-      // ==========================================
+//
       const noiseLen = Math.floor(ctx.sampleRate * 0.02);
       const noiseBuf = ctx.createBuffer(1, noiseLen, ctx.sampleRate);
       const noiseData = noiseBuf.getChannelData(0);
@@ -170,9 +147,7 @@ export class SoundManager {
       noiseSrc.start(now);
       noiseSrc.stop(now + 0.025);
 
-      // ==========================================
-      // النغمات التوافقية (تعطي الرنين المعدني)
-      // ==========================================
+      // رنة المعدن
       const baseFreq = 800 * (0.97 + Math.random() * 0.06);
       const partials = [1, 2.4, 3.8, 5.6];
       const ringDurations = [0.09, 0.07, 0.05, 0.04];
@@ -199,16 +174,12 @@ export class SoundManager {
   }
 
   // ============================================
-  // 8. صوت النقر (للتفاعلات)
-  // ============================================
   playClickSound() {
     if (!this.isEnabled || !this.audioContext) return;
     this._playMetalSound(0.1);
   }
 
-  // ============================================
-  // 9. التحكم في مستوى الصوت
-  // ============================================
+// مستوى الصوت
   increaseVolume(amount = 0.1) {
     this.volume = Math.min(1, this.volume + amount);
     if (this.masterGain) {
@@ -225,9 +196,9 @@ export class SoundManager {
     }
     this.playClickSound();
     console.log(`🔊 Volume: ${this.getVolumePercent()}%`);
-  }// ============================================
-  // 10. كتم/تفعيل الصوت
-  // ============================================
+  }
+
+  // كتم أو تشغيل
   toggleSound() {
     this.isEnabled = !this.isEnabled;
     if (this.isEnabled) {
@@ -238,9 +209,6 @@ export class SoundManager {
     return this.isEnabled;
   }
 
-  // ============================================
-  // 11. دوال مساعدة
-  // ============================================
   getVolumePercent() {
     return Math.round(this.volume * 100);
   }
@@ -249,9 +217,6 @@ export class SoundManager {
     return this.isEnabled;
   }
 
-  // ============================================
-  // 12. تنظيف الموارد
-  // ============================================
   dispose() {
     if (this.audioContext) {
       this.audioContext.close().catch(() => {});

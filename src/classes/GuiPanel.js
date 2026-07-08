@@ -13,7 +13,9 @@ export class GuiPanel {
       total: 0
     }; 
     this.restPhysicsValues = { 
-        momentum : 0 
+        momentum : 0,
+        radius : 0.25,
+        length : 2.0 
     };
     this.buildGui();
   
@@ -32,9 +34,16 @@ export class GuiPanel {
     this.gui.add(this.physics,"activeBalls",1,5,1).name("Balls").onChange((value)=>{
         this.physics.setActiveBalls(value);
     });
-    //     this.gui.add(this.ballGroup,"setRopeLength", 1.5, 3.5, 1).name("Length").onChange((value)=>{
-    //     this.physics.setActiveBalls(value);
+        this.gui.add(this.physics,"stringLength", 1.5, 3.5, 0.3).name("Length").onChange((value)=>{
+        this.physics.setRopeLength(value);
+    });
+    //     this.gui.add(this.physics,"ballRadius", 0.15, 0.55, 0.05).name("Raduis").onChange((value)=>{
+    //     this.physics.setRadius(value);
     // });
+        this.gui.add(this.physics,"planet",["Earth - 9.81", "Moon - 1.62", "Mars - 3.71", "Jupiter - 24.79", "Venus - 8.87", "Mercury - 3.2"]).name("Planet").onChange((value)=>{
+        this.physics.setPlanet(value);
+    });
+    
     this.gui.add(this.physics, "move").name("Move");
     this.gui.add(this.physics, "stop").name("Stop");
 
@@ -45,6 +54,8 @@ export class GuiPanel {
 
     const physicsValues = this.gui.addFolder("Rest Physics Values");
     physicsValues.add(this.restPhysicsValues, "momentum").name("Momentum").listen();
+    physicsValues.add(this.restPhysicsValues, "radius").name("Radius").listen();
+    physicsValues.add(this.restPhysicsValues, "length").name("Length").listen();
 
    }
 
@@ -56,5 +67,13 @@ export class GuiPanel {
 
    updateMomentum (value) {
     this.restPhysicsValues.momentum = value;
+   }
+
+   updateRadius (value) {
+    this.restPhysicsValues.radius = value;
+   }
+
+    updateLength (value) {
+    this.restPhysicsValues.length = value;
    }
 }
