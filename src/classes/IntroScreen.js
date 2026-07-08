@@ -70,18 +70,6 @@ const CSS = `
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
-@keyframes is-card-glow {
-  0%, 100% { border-color: rgba(0, 255, 255, 0.25); box-shadow: 0 0 8px rgba(0, 255, 255, 0.05); }
-  50% { border-color: rgba(0, 255, 255, 0.6); box-shadow: 0 0 20px rgba(0, 255, 255, 0.2); }
-}
-@keyframes is-card-hover {
-  0% { transform: scale(1) translateY(0); }
-  100% { transform: scale(1.08) translateY(-6px); }
-}
-@keyframes is-particle-burst {
-  0% { transform: translate(0, 0) scale(1); opacity: 1; }
-  100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-}
 
 .is-premium-overlay {
   position: fixed; inset: 0; z-index: 99998;
@@ -243,81 +231,6 @@ const CSS = `
   user-select: none;
 }
 
-.is-cards-container {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  width: 100%;
-  max-width: 640px;
-  margin: 4px 0 10px;
-}
-
-.is-card {
-  position: relative;
-  background: rgba(0, 255, 255, 0.03);
-  border: 1.5px solid rgba(0, 255, 255, 0.25);
-  border-radius: 2px;
-  padding: 10px 8px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  animation: is-card-glow 3s ease-in-out infinite;
-  user-select: none;
-  overflow: hidden;
-}
-
-.is-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, transparent 60%, rgba(0, 255, 255, 0.05) 100%);
-  pointer-events: none;
-}
-
-.is-card:hover {
-  transform: scale(1.08) translateY(-6px);
-  border-color: rgba(0, 255, 255, 0.7);
-  background: rgba(0, 255, 255, 0.08);
-  animation: none;
-  box-shadow:
-    0 0 20px rgba(0, 255, 255, 0.2),
-    0 8px 25px rgba(0, 0, 0, 0.4);
-}
-
-.is-card-key {
-  font-family: 'Press Start 2P', 'Courier New', monospace;
-  font-size: 11px;
-  font-weight: 700;
-  color: #0ff;
-  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-  display: block;
-  margin-bottom: 4px;
-}
-
-.is-card-label {
-  font-family: 'Press Start 2P', 'Courier New', monospace;
-  font-size: 7px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.5);
-  line-height: 1.4;
-  display: block;
-  white-space: pre-line;
-}
-
-.is-card-particle {
-  position: absolute;
-  width: 3px;
-  height: 3px;
-  background: #0ff;
-  border-radius: 0;
-  pointer-events: none;
-  box-shadow: 0 0 4px rgba(0, 255, 255, 0.6);
-}
-
-.is-card-particle.is--burst {
-  animation: is-particle-burst 0.5s ease-out forwards;
-}
-
 .is-quote {
   font-family: 'Press Start 2P', 'Courier New', monospace;
   font-size: 9px;
@@ -325,7 +238,7 @@ const CSS = `
   color: rgba(255, 255, 255, 0.4);
   text-align: center;
   line-height: 1.8;
-  margin: 6px 0 14px;
+  margin: 6px 0 24px;
   padding: 10px 20px;
   max-width: 520px;
 }
@@ -415,9 +328,6 @@ const CSS = `
   .is-title-text, .is-title-glitch, .is-title-glitch2 { font-size: 28px; letter-spacing: 4px; }
   .is-title-cursor { height: 28px; }
   .is-subtitle { font-size: 10px; letter-spacing: 4px; }
-  .is-cards-container { grid-template-columns: repeat(2, 1fr); max-width: 360px; gap: 8px; }
-  .is-card-key { font-size: 10px; }
-  .is-card-label { font-size: 6px; }
   .is-quote { font-size: 7px; }
   .is-start-btn { font-size: 13px; padding: 14px 32px; letter-spacing: 2px; }
 }
@@ -451,11 +361,9 @@ export default class IntroScreen {
     this.titleText = '';
     this.titleComplete = false;
     this.subtitleEl = null;
-    this.cardsEl = null;
     this.quoteEl = null;
     this.startBtn = null;
     this.titleContainer = null;
-    this.cardParticles = [];
   }
 
   mount() {
@@ -687,47 +595,6 @@ export default class IntroScreen {
     this.subtitleEl = subtitle;
     content.appendChild(subtitle);
 
-    const cardsContainer = document.createElement('div');
-    cardsContainer.className = 'is-cards-container';
-    this.cardsEl = cardsContainer;
-
-    const cardData = [
-      { key: '1', label: 'Pull one ball' },
-      { key: '2', label: 'Pull two balls' },
-      { key: '3', label: 'Pull three balls' },
-      { key: 'L', label: 'Change string\nlength' },
-      { key: '+', label: 'Increase\nvolume' },
-      { key: '-', label: 'Decrease\nvolume' },
-      { key: 'II', label: 'Pause\nsimulation' },
-      { key: '\u21BA', label: 'Reset\nsimulation' },
-      { key: '\u2190\u2192\u2191\u2193', label: 'Move\ncamera' },
-    ];
-
-    for (const data of cardData) {
-      const card = document.createElement('div');
-      card.className = 'is-card';
-      card.dataset.key = data.key;
-
-      const keyEl = document.createElement('span');
-      keyEl.className = 'is-card-key';
-      keyEl.textContent = data.key;
-      card.appendChild(keyEl);
-
-      const labelEl = document.createElement('span');
-      labelEl.className = 'is-card-label';
-      labelEl.textContent = data.label;
-      card.appendChild(labelEl);
-
-      card.addEventListener('mouseenter', () => {
-        this._playHoverSound();
-        this._burstCardParticles(card);
-      });
-
-      cardsContainer.appendChild(card);
-    }
-
-    content.appendChild(cardsContainer);
-
     const quote = document.createElement('div');
     quote.className = 'is-quote';
     quote.innerHTML = 'Scientists call this physics.<br><strong>We call it oddly satisfying.</strong>';
@@ -792,20 +659,15 @@ export default class IntroScreen {
     }, 500);
 
     this._delay(() => {
-      this.cardsEl.style.transition = 'all 0.8s ease';
-      this.cardsEl.style.opacity = '1';
-    }, 1400);
-
-    this._delay(() => {
       this.quoteEl.style.transition = 'all 0.8s ease';
       this.quoteEl.style.opacity = '1';
-    }, 2200);
+    }, 1400);
 
     this._delay(() => {
       this.startBtn.style.transition = 'all 0.6s ease';
       this.startBtn.style.opacity = '1';
       this.startBtn.style.transform = 'scale(1)';
-    }, 3000);
+    }, 2200);
   }
 
   _startParticles() {
@@ -835,34 +697,6 @@ export default class IntroScreen {
         phase: Math.random() * Math.PI * 2,
         twinkleSpeed: 0.8 + Math.random() * 2,
       });
-    }
-  }
-
-  _burstCardParticles(card) {
-    const rect = card.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const count = 5 + Math.floor(Math.random() * 4);
-
-    for (let i = 0; i < count; i++) {
-      const p = document.createElement('div');
-      p.className = 'is-card-particle';
-      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
-      const dist = 20 + Math.random() * 30;
-      p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
-      p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
-      p.style.left = cx + 'px';
-      p.style.top = cy + 'px';
-      const hue = Math.random() > 0.5 ? 180 : 280;
-      p.style.background = `hsl(${hue}, 100%, 60%)`;
-      p.style.boxShadow = `0 0 4px hsl(${hue}, 100%, 60%)`;
-      document.body.appendChild(p);
-      requestAnimationFrame(() => {
-        p.classList.add('is--burst');
-      });
-      this._delay(() => {
-        if (p.parentNode) p.parentNode.removeChild(p);
-      }, 600);
     }
   }
 
